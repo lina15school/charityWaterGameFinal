@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water For All - Idle Game</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <h1 class="header-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+        </svg>
+        Water For All
+      </h1>
+      <div class="header-buttons">
+        <button class="header-button" id="info-btn">ℹ</button>
+        <button class="header-button" id="reset-game-btn">Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="grid">
+      
+      <!-- Left Column - Stats -->
+      <div class="column">
+        <div class="card">
+          <h2 class="card-title">Resources</h2>
+          <div>
+            <div class="flex-between">
+              <span class="text-small">Water Drops</span>
+              <span class="text-large" id="water-drops">0</span>
+            </div>
+            <div class="flex-between">
+              <span class="text-small">Per Second</span>
+              <span class="text-medium" id="per-second">0/s</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Impact</h2>
+          <div class="section-spacing">
+            <div class="flex-between">
+              <span class="text-small">People Helped</span>
+              <span style="font-weight: 600;" id="people-helped">0</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="people-progress"></div>
+            </div>
+          </div>
+          <div class="section-spacing">
+            <div class="flex-between">
+              <span class="text-small">Communities</span>
+              <span style="font-weight: 600;" id="communities">0</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="communities-progress"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex-between">
+              <span class="text-small">Wells Built</span>
+              <span style="font-weight: 600;" id="wells">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3 class="info-card-title">Did You Know?</h3>
+          <p class="info-card-text" id="did-you-know-text">
+            785 million people lack access to clean water. That's nearly 1 in 10 people worldwide.
+          </p>
+        </div>
+      </div>
+
+      <!-- Center Column - Main Clicker -->
+      <div class="column">
+        <div class="clicker-card">
+          <div style="text-align: center;">
+            <div class="clicker-circle" id="clicker">
+              <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect x='60' y='40' width='80' height='120' rx='10' fill='%23003366'/%3E%3Crect x='65' y='30' width='70' height='15' rx='7' fill='%23003366'/%3E%3Cpath d='M 100 30 L 110 15 L 115 30' fill='%23003366'/%3E%3C/svg%3E" 
+                   alt="Jerrycan" 
+                   class="clicker-image">
+            </div>
+            <p class="clicker-text">Click to Collect Water</p>
+            <p class="clicker-subtext">+1 per click</p>
+            <p class="event-message" id="event-message"></p>
+            <p class="win-message" id="win-message">You changed the world! Clean water reached communities everywhere.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Milestones</h2>
+          <div>
+            <div class="milestone milestone-active" id="milestone-row-1">
+              <div class="milestone-icon">🚰</div>
+              <div class="milestone-content">
+                <p class="milestone-text">First Drop</p>
+                <div class="progress-bar progress-bar-small">
+                  <div class="progress-fill" id="milestone-1"></div>
+                </div>
+              </div>
+            </div>
+            <div class="milestone milestone-inactive" id="milestone-row-2">
+              <div class="milestone-icon">🏘️</div>
+              <div class="milestone-content">
+                <p class="milestone-text">Help a Village</p>
+                <div class="progress-bar progress-bar-small">
+                  <div class="progress-fill" id="milestone-2"></div>
+                </div>
+              </div>
+            </div>
+            <div class="milestone milestone-inactive" id="milestone-row-3">
+              <div class="milestone-icon">🌍</div>
+              <div class="milestone-content">
+                <p class="milestone-text">Change the World</p>
+                <div class="progress-bar progress-bar-small">
+                  <div class="progress-fill" id="milestone-3"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column - Upgrades -->
+      <div class="column">
+        <div class="card">
+          <h2 class="card-title">📈 Upgrades</h2>
+          <p class="card-description">Increase your water production</p>
+          <div>
+            <button class="upgrade-button" id="upgrade-hand-pump" disabled>
+              <div class="upgrade-content">
+                <p class="upgrade-title">Hand Pump</p>
+                <p class="upgrade-desc">+1 water/sec</p>
+                <p class="upgrade-cost" id="cost-hand-pump">Cost: 10 drops</p>
+              </div>
+              <span class="upgrade-count" id="count-hand-pump">0</span>
+            </button>
+
+            <button class="upgrade-button" id="upgrade-water-well" disabled>
+              <div class="upgrade-content">
+                <p class="upgrade-title">Water Well</p>
+                <p class="upgrade-desc">+5 water/sec</p>
+                <p class="upgrade-cost" id="cost-water-well">Cost: 100 drops</p>
+              </div>
+              <span class="upgrade-count" id="count-water-well">0</span>
+            </button>
+
+            <button class="upgrade-button" id="upgrade-filtration-system" disabled>
+              <div class="upgrade-content">
+                <p class="upgrade-title">Filtration System</p>
+                <p class="upgrade-desc">+25 water/sec</p>
+                <p class="upgrade-cost" id="cost-filtration-system">Cost: 500 drops</p>
+              </div>
+              <span class="upgrade-count" id="count-filtration-system">0</span>
+            </button>
+
+            <button class="upgrade-button" id="upgrade-water-tower" disabled>
+              <div class="upgrade-content">
+                <p class="upgrade-title">Water Tower</p>
+                <p class="upgrade-desc">+100 water/sec</p>
+                <p class="upgrade-cost" id="cost-water-tower">Cost: 2,500 drops</p>
+              </div>
+              <span class="upgrade-count" id="count-water-tower">0</span>
+            </button>
+
+            <button class="upgrade-button" id="upgrade-reverse-osmosis" disabled>
+              <div class="upgrade-content">
+                <p class="upgrade-title">Ocean Reverse Osmosis</p>
+                <p class="upgrade-desc">+300 water/sec</p>
+                <p class="upgrade-cost" id="cost-reverse-osmosis">Cost: 6,000 drops</p>
+              </div>
+              <span class="upgrade-count" id="count-reverse-osmosis">0</span>
+            </button>
+
+            <button class="upgrade-button" id="upgrade-grader-fast-track" disabled>
+              <div class="upgrade-content">
+                <p class="upgrade-title">FOR GRADING PURPOSE ONLY</p>
+                <p class="upgrade-desc">+500 water/sec</p>
+                <p class="upgrade-cost" id="cost-grader-fast-track">Cost: 1 drop</p>
+              </div>
+              <span class="upgrade-count" id="count-grader-fast-track">0</span>
+            </button>
+            <p class="grader-disclaimer">DISCLAIMER: The game might take a while to complete, so I added a cheater button to speed things up.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">⚡ Boosts</h2>
+          <p class="card-description">Enhance your efficiency</p>
+          <div>
+            <button class="upgrade-button" id="boost-better-tools" disabled>
+              <div class="upgrade-content">
+                <p class="upgrade-title">Better Tools</p>
+                <p class="upgrade-desc">2x click power</p>
+                <p class="upgrade-cost" id="cost-better-tools">Cost: 50 drops</p>
+              </div>
+            </button>
+
+            <button class="upgrade-button" id="boost-efficiency" disabled>
+              <div class="upgrade-content">
+                <p class="upgrade-title">Efficiency</p>
+                <p class="upgrade-desc">1.5x production</p>
+                <p class="upgrade-cost" id="cost-efficiency">Cost: 250 drops</p>
+              </div>
+            </button>
+
+            <button class="upgrade-button" id="boost-community-drive" disabled>
+              <div class="upgrade-content">
+                <p class="upgrade-title">Community Drive</p>
+                <p class="upgrade-desc">2x volunteer output</p>
+                <p class="upgrade-cost" id="cost-community-drive">Cost: 700 drops</p>
+              </div>
+            </button>
+
+            <button class="upgrade-button" id="boost-smart-logistics" disabled>
+              <div class="upgrade-content">
+                <p class="upgrade-title">Smart Logistics</p>
+                <p class="upgrade-desc">+3 click power</p>
+                <p class="upgrade-cost" id="cost-smart-logistics">Cost: 1,000 drops</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">👥 Volunteers</h2>
+          <p class="card-description">Hire helpers for your cause</p>
+          <div>
+            <button class="upgrade-button" id="volunteer-community" disabled>
+              <div class="upgrade-content">
+                <p class="upgrade-title">Community Volunteer</p>
+                <p class="upgrade-desc">Auto-collect water</p>
+                <p class="upgrade-cost" id="cost-volunteer-community">Cost: 150 drops</p>
+              </div>
+              <span class="upgrade-count" id="count-volunteer-community">0</span>
+            </button>
+
+            <button class="upgrade-button" id="volunteer-engineer" disabled>
+              <div class="upgrade-content">
+                <p class="upgrade-title">Field Engineer Volunteer</p>
+                <p class="upgrade-desc">+8 water/sec</p>
+                <p class="upgrade-cost" id="cost-volunteer-engineer">Cost: 800 drops</p>
+              </div>
+              <span class="upgrade-count" id="count-volunteer-engineer">0</span>
+            </button>
+
+            <button class="upgrade-button" id="volunteer-educator" disabled>
+              <div class="upgrade-content">
+                <p class="upgrade-title">Water Educator Volunteer</p>
+                <p class="upgrade-desc">+20 water/sec</p>
+                <p class="upgrade-cost" id="cost-volunteer-educator">Cost: 2,000 drops</p>
+              </div>
+              <span class="upgrade-count" id="count-volunteer-educator">0</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="confetti-container"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
