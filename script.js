@@ -1,4 +1,6 @@
 const STORAGE_KEY = 'waterForAllSaveV1';
+const CHANGE_THE_WORLD_TARGET = 10000;
+const PRODUCTION_TICK_MS = 5;
 
 const gameState = {
   waterDrops: 0,
@@ -6,17 +8,23 @@ const gameState = {
   peopleHelped: 0,
   communities: 0,
   wells: 0,
+  countries: 0,
   clickPower: 1,
   productionMultiplier: 1,
   volunteerMultiplier: 1,
   winReached: false,
+  milestoneMessages: {
+    quarter: false,
+    halfway: false,
+    threeQuarters: false
+  },
   upgrades: {
-    handPump: { count: 0, baseCost: 10, currentCost: 10, perSecond: 1, isVolunteer: false },
-    waterWell: { count: 0, baseCost: 100, currentCost: 100, perSecond: 5, isVolunteer: false },
-    filtrationSystem: { count: 0, baseCost: 500, currentCost: 500, perSecond: 25, isVolunteer: false },
-    waterTower: { count: 0, baseCost: 2500, currentCost: 2500, perSecond: 100, isVolunteer: false },
-    reverseOsmosis: { count: 0, baseCost: 6000, currentCost: 6000, perSecond: 300, isVolunteer: false },
-    graderFastTrack: { count: 0, baseCost: 1, currentCost: 1, perSecond: 500, isVolunteer: false },
+    handPump: { count: 0, baseCost: 5, currentCost: 10, perSecond: 1, isVolunteer: false },
+    waterWell: { count: 0, baseCost: 50, currentCost: 100, perSecond: 5, isVolunteer: false },
+    filtrationSystem: { count: 0, baseCost: 250, currentCost: 500, perSecond: 25, isVolunteer: false },
+    waterTower: { count: 0, baseCost: 1250, currentCost: 2500, perSecond: 100, isVolunteer: false },
+    reverseOsmosis: { count: 0, baseCost: 3000, currentCost: 6000, perSecond: 300, isVolunteer: false },
+    graderFastTrack: { count: 0, baseCost: 0, currentCost: 1, perSecond: 50, isVolunteer: false },
     volunteerCommunity: { count: 0, baseCost: 150, currentCost: 150, perSecond: 2, isVolunteer: true },
     volunteerEngineer: { count: 0, baseCost: 800, currentCost: 800, perSecond: 8, isVolunteer: true },
     volunteerEducator: { count: 0, baseCost: 2000, currentCost: 2000, perSecond: 20, isVolunteer: true }
@@ -35,14 +43,31 @@ const perSecondEl = document.getElementById('per-second');
 const peopleHelpedEl = document.getElementById('people-helped');
 const communitiesEl = document.getElementById('communities');
 const wellsEl = document.getElementById('wells');
+const countriesEl = document.getElementById('countries');
 const peopleProgressEl = document.getElementById('people-progress');
 const communitiesProgressEl = document.getElementById('communities-progress');
+const wellsProgressEl = document.getElementById('wells-progress');
 const clickerSubtextEl = document.querySelector('.clicker-subtext');
 const resetGameBtn = document.getElementById('reset-game-btn');
 const eventMessageEl = document.getElementById('event-message');
+const milestoneMessageEl = document.getElementById('milestone-message');
 const winMessageEl = document.getElementById('win-message');
 const confettiContainer = document.getElementById('confetti-container');
 const didYouKnowTextEl = document.getElementById('did-you-know-text');
+const checkpoint25El = document.getElementById('checkpoint-25');
+const checkpoint50El = document.getElementById('checkpoint-50');
+const checkpoint75El = document.getElementById('checkpoint-75');
+const checkpoint100El = document.getElementById('checkpoint-100');
+const clickSound = new Audio('assets/clickEffect.mp3');
+clickSound.preload = 'auto';
+
+function playClickSound() {
+  // Play a fresh instance so rapid clicks can overlap without cutting off prior audio.
+  const soundInstance = clickSound.cloneNode();
+  soundInstance.play().catch(function () {
+    // Ignore playback errors so clicking still works in restricted environments.
+  });
+}
 
 const didYouKnowFacts = [
   'Around 2.2 billion people still live without safely managed drinking water services.',
@@ -155,6 +180,16 @@ function getPerSecond() {
   return getBasePerSecond() * gameState.productionMultiplier;
 }
 
+function getCurrentClickPower() {
+  let totalClickPower = gameState.clickPower;
+
+  if (gameState.boosts.smartLogistics.purchased) {
+    totalClickPower += getPerSecond() * 0.1;
+  }
+
+  return totalClickPower;
+}
+
 function addWater(amount) {
   gameState.waterDrops += amount;
   gameState.totalCollected += amount;
@@ -164,11 +199,27 @@ function addWater(amount) {
 function removeWater(amount) {
   gameState.waterDrops = Math.max(0, gameState.waterDrops - amount);
 }
+function getRawImpactValues() {
+  const people = gameState.totalCollected / 10;
+  const communities = people / 30;
+  const wells = communities / 6;
+  const countries = wells / 40;
+
+  return {
+    people: people,
+    communities: communities,
+    wells: wells,
+    countries: countries
+  };
+}
 
 function updateImpact() {
-  gameState.peopleHelped = Math.floor(gameState.totalCollected / 10);
-  gameState.communities = Math.floor(gameState.peopleHelped / 100);
-  gameState.wells = Math.floor(gameState.communities / 5);
+  const rawImpact = getRawImpactValues();
+
+  gameState.peopleHelped = Math.floor(rawImpact.people);
+  gameState.communities = Math.floor(rawImpact.communities);
+  gameState.wells = Math.floor(rawImpact.wells);
+  gameState.countries = Math.floor(rawImpact.countries);
 }
 
 function setMilestoneRowState(rowElement, isActive) {
@@ -181,12 +232,35 @@ function setMilestoneRowState(rowElement, isActive) {
   }
 }
 
+function setCheckpointState(element, isComplete) {
+  if (isComplete) {
+    element.classList.add('checkpoint-complete');
+  } else {
+    element.classList.remove('checkpoint-complete');
+  }
+}
+
+function updateCheckpointHighlights() {
+  setCheckpointState(checkpoint25El, gameState.totalCollected >= CHANGE_THE_WORLD_TARGET * 0.25);
+  setCheckpointState(checkpoint50El, gameState.totalCollected >= CHANGE_THE_WORLD_TARGET * 0.5);
+  setCheckpointState(checkpoint75El, gameState.totalCollected >= CHANGE_THE_WORLD_TARGET * 0.75);
+  setCheckpointState(checkpoint100El, gameState.totalCollected >= CHANGE_THE_WORLD_TARGET);
+}
+
 function updateProgressBars() {
-  const peoplePercent = gameState.peopleHelped % 100;
-  const communitiesPercent = (gameState.communities % 10) * 10;
+  const rawImpact = getRawImpactValues();
+  const waterPerSecond = getPerSecond();
+  const perSecondThreshold = 50 / PRODUCTION_TICK_MS;
+  const peoplePerSecond = waterPerSecond / 10;
+  const communitiesPerSecond = peoplePerSecond / 30;
+  const wellsPerSecond = communitiesPerSecond / 6;
+  const peoplePercent = peoplePerSecond >= perSecondThreshold ? 100 : (rawImpact.people % 1) * 100;
+  const communitiesPercent = communitiesPerSecond >= perSecondThreshold ? 100 : (rawImpact.communities % 1) * 100;
+  const wellsPercent = wellsPerSecond >= perSecondThreshold ? 100 : (rawImpact.wells % 1) * 100;
 
   peopleProgressEl.style.width = peoplePercent + '%';
   communitiesProgressEl.style.width = communitiesPercent + '%';
+  wellsProgressEl.style.width = wellsPercent + '%';
 
   const milestone1Percent = Math.min((gameState.totalCollected / 10) * 100, 100);
   const milestone2Percent = Math.min((gameState.totalCollected / 1000) * 100, 100);
@@ -195,6 +269,7 @@ function updateProgressBars() {
   milestone1El.style.width = milestone1Percent + '%';
   milestone2El.style.width = milestone2Percent + '%';
   milestone3El.style.width = milestone3Percent + '%';
+  updateCheckpointHighlights();
 
   setMilestoneRowState(milestoneRow1El, gameState.totalCollected >= 10);
   setMilestoneRowState(milestoneRow2El, gameState.totalCollected >= 1000);
@@ -233,13 +308,15 @@ function updateUpgradeButtons() {
 
 function updateDisplay() {
   const perSecond = getPerSecond();
+  const clickPower = getCurrentClickPower();
 
-  waterDropsEl.textContent = formatNumber(gameState.waterDrops);
+  waterDropsEl.textContent = Math.round(gameState.waterDrops).toLocaleString();
   perSecondEl.textContent = formatNumber(perSecond) + '/s';
   peopleHelpedEl.textContent = formatNumber(gameState.peopleHelped);
   communitiesEl.textContent = formatNumber(gameState.communities);
   wellsEl.textContent = formatNumber(gameState.wells);
-  clickerSubtextEl.textContent = '+' + formatNumber(gameState.clickPower) + ' per click';
+  countriesEl.textContent = formatNumber(gameState.countries);
+  clickerSubtextEl.textContent = '+' + formatNumber(clickPower) + ' per click';
 
   if (gameState.winReached) {
     winMessageEl.classList.add('show');
@@ -259,7 +336,7 @@ function buyUpgrade(upgradeKey) {
 
   gameState.waterDrops -= upgrade.currentCost;
   upgrade.count += 1;
-  upgrade.currentCost = Math.ceil(upgrade.baseCost * Math.pow(1.15, upgrade.count));
+  upgrade.currentCost = Math.ceil(upgrade.baseCost * Math.pow(1.03, upgrade.count));
 
   updateDisplay();
   saveGame();
@@ -287,7 +364,7 @@ function buyBoost(boostKey) {
   }
 
   if (boostKey === 'smartLogistics') {
-    gameState.clickPower = gameState.clickPower + 3;
+    // Smart Logistics now scales click power from current production.
   }
 
   updateDisplay();
@@ -301,6 +378,15 @@ function showEventMessage(text) {
       eventMessageEl.textContent = '';
     }
   }, 3000);
+}
+
+function showMilestoneMessage(text) {
+  milestoneMessageEl.textContent = text;
+  setTimeout(function () {
+    if (milestoneMessageEl.textContent === text) {
+      milestoneMessageEl.textContent = '';
+    }
+  }, 3500);
 }
 
 function triggerObstacle() {
@@ -334,12 +420,33 @@ function launchConfetti() {
   }
 }
 
+function checkMilestoneProgressMessages() {
+  if (!gameState.milestoneMessages.quarter && gameState.totalCollected >= CHANGE_THE_WORLD_TARGET * 0.25) {
+    gameState.milestoneMessages.quarter = true;
+    showMilestoneMessage('25% reached: Great start!');
+    return;
+  }
+
+  if (!gameState.milestoneMessages.halfway && gameState.totalCollected >= CHANGE_THE_WORLD_TARGET * 0.5) {
+    gameState.milestoneMessages.halfway = true;
+    showMilestoneMessage('50% reached: Halfway there!');
+    return;
+  }
+
+  if (!gameState.milestoneMessages.threeQuarters && gameState.totalCollected >= CHANGE_THE_WORLD_TARGET * 0.75) {
+    gameState.milestoneMessages.threeQuarters = true;
+    showMilestoneMessage('75% reached: The finish line is close!');
+  }
+}
+
 function checkWinCondition() {
   if (gameState.winReached) {
     return;
   }
 
-  if (gameState.totalCollected >= 10000) {
+  checkMilestoneProgressMessages();
+
+  if (gameState.totalCollected >= CHANGE_THE_WORLD_TARGET) {
     gameState.winReached = true;
     updateDisplay();
     launchConfetti();
@@ -356,6 +463,11 @@ function saveGame() {
     productionMultiplier: gameState.productionMultiplier,
     volunteerMultiplier: gameState.volunteerMultiplier,
     winReached: gameState.winReached,
+    milestoneMessages: {
+      quarter: gameState.milestoneMessages.quarter,
+      halfway: gameState.milestoneMessages.halfway,
+      threeQuarters: gameState.milestoneMessages.threeQuarters
+    },
     upgrades: {},
     boosts: {}
   };
@@ -391,6 +503,12 @@ function loadGame() {
     gameState.productionMultiplier = savedData.productionMultiplier || 1;
     gameState.volunteerMultiplier = savedData.volunteerMultiplier || 1;
     gameState.winReached = !!savedData.winReached;
+
+    if (savedData.milestoneMessages) {
+      gameState.milestoneMessages.quarter = !!savedData.milestoneMessages.quarter;
+      gameState.milestoneMessages.halfway = !!savedData.milestoneMessages.halfway;
+      gameState.milestoneMessages.threeQuarters = !!savedData.milestoneMessages.threeQuarters;
+    }
 
     if (savedData.upgrades) {
       Object.keys(gameState.upgrades).forEach(function (key) {
@@ -428,10 +546,14 @@ function resetGame() {
   gameState.peopleHelped = 0;
   gameState.communities = 0;
   gameState.wells = 0;
+  gameState.countries = 0;
   gameState.clickPower = 1;
   gameState.productionMultiplier = 1;
   gameState.volunteerMultiplier = 1;
   gameState.winReached = false;
+  gameState.milestoneMessages.quarter = false;
+  gameState.milestoneMessages.halfway = false;
+  gameState.milestoneMessages.threeQuarters = false;
 
   Object.keys(gameState.upgrades).forEach(function (key) {
     gameState.upgrades[key].count = 0;
@@ -443,6 +565,7 @@ function resetGame() {
   });
 
   eventMessageEl.textContent = '';
+  milestoneMessageEl.textContent = '';
   updateDisplay();
   saveGame();
 }
@@ -457,7 +580,9 @@ function showNextDidYouKnowFact() {
 }
 
 clicker.addEventListener('click', function () {
-  addWater(gameState.clickPower);
+  playClickSound();
+
+  addWater(getCurrentClickPower());
   updateDisplay();
   checkWinCondition();
   saveGame();
@@ -520,11 +645,12 @@ resetGameBtn.addEventListener('click', resetGame);
 setInterval(function () {
   const perSecond = getPerSecond();
   if (perSecond > 0) {
-    addWater(perSecond);
+    const perTick = perSecond * (PRODUCTION_TICK_MS / 1000);
+    addWater(perTick);
     updateDisplay();
     checkWinCondition();
   }
-}, 1000);
+}, PRODUCTION_TICK_MS);
 
 setInterval(function () {
   saveGame();

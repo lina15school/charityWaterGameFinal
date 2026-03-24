@@ -4,15 +4,28 @@
   box-sizing: border-box;
 }
 
+:root {
+  --cw-yellow: #FFC907;
+  --cw-navy: #003366;
+  --cw-blue: #77A8BB;
+  --cw-cream: #FFF7E1;
+  --cw-black: #1A1A1A;
+  --cw-peach: #FED8C1;
+  --cw-clay: #BF6C46;
+  --cw-gray: #CBCCD1;
+  --cw-white: #ffffff;
+}
+
 body {
   font-family: system-ui, -apple-system, sans-serif;
-  background-color: #f8fafc;
+  background-color: var(--cw-cream);
+  color: var(--cw-black);
   min-height: 100vh;
 }
 
 /* Header */
 .header {
-  background-color: #003366;
+  background-color: var(--cw-navy);
   padding: 16px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -28,10 +41,17 @@ body {
 .header-title {
   color: white;
   font-size: 24px;
-  font-weight: bold;
+  font-family: Baskerville, "Baskerville Old Face", "Times New Roman", serif;
+  font-weight: 400;
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.header-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .header-buttons {
@@ -44,6 +64,7 @@ body {
   border: none;
   color: white;
   padding: 8px 12px;
+  min-height: 44px;
   cursor: pointer;
   border-radius: 4px;
   font-size: 16px;
@@ -55,6 +76,12 @@ body {
 
 #reset-game-btn {
   border: 1px solid rgba(255, 255, 255, 0.4);
+  background-color: var(--cw-yellow);
+  color: var(--cw-black);
+}
+
+#reset-game-btn:hover {
+  background-color: #e8b700;
 }
 
 /* Main Content */
@@ -78,8 +105,8 @@ body {
 
 /* Cards */
 .card {
-  background-color: white;
-  border: 1px solid #e2e8f0;
+  background-color: var(--cw-white);
+  border: 1px solid var(--cw-gray);
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -94,7 +121,7 @@ body {
 
 .card-description {
   font-size: 14px;
-  color: #64748b;
+  color: #4b5563;
   margin-top: 4px;
   margin-bottom: 16px;
 }
@@ -105,30 +132,31 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  margin-top: 12px;
 }
 
 .text-small {
   font-size: 14px;
-  color: #64748b;
+  color: #4b5563;
 }
 
 .text-large {
   font-size: 24px;
   font-weight: bold;
-  color: #003366;
+  color: var(--cw-navy);
 }
 
 .text-medium {
   font-size: 18px;
   font-weight: 600;
-  color: #334155;
+  color: var(--cw-black);
 }
 
 /* Progress Bar */
 .progress-bar {
   width: 100%;
   height: 8px;
-  background-color: #e2e8f0;
+  background-color: #e8e8eb;
   border-radius: 4px;
   overflow: hidden;
   margin-top: 4px;
@@ -140,22 +168,21 @@ body {
 
 .progress-fill {
   height: 100%;
-  background-color: #003366;
+  background-color: var(--cw-yellow);
   width: 0%;
-  transition: width 0.3s ease;
 }
 
 /* Info Card */
 .info-card {
-  background-color: rgba(119, 168, 187, 0.12);
-  border: 1px solid #77A8BB;
+  background-color: rgba(119, 168, 187, 0.16);
+  border: 1px solid var(--cw-blue);
   border-radius: 8px;
   padding: 20px;
 }
 
 .info-card-title {
   font-size: 14px;
-  color: #003366;
+  color: var(--cw-navy);
   font-weight: 600;
   margin-top: 0;
   margin-bottom: 12px;
@@ -163,15 +190,15 @@ body {
 
 .info-card-text {
   font-size: 14px;
-  color: #003366;
+  color: var(--cw-black);
   margin: 0;
   line-height: 1.5;
 }
 
 /* Clicker */
 .clicker-card {
-  background: linear-gradient(to bottom, rgba(119, 168, 187, 0.12), white);
-  border: 1px solid #e2e8f0;
+  background: linear-gradient(to bottom, rgba(255, 201, 7, 0.16), var(--cw-white));
+  border: 1px solid var(--cw-gray);
   border-radius: 8px;
   padding: 24px;
   min-height: 400px;
@@ -185,10 +212,11 @@ body {
   display: inline-block;
   padding: 32px;
   border-radius: 50%;
-  border: 4px solid #77A8BB;
-  background-color: rgba(119, 168, 187, 0.12);
+  border: 4px solid var(--cw-blue);
+  background-color: rgba(119, 168, 187, 0.15);
   box-shadow: 0 10px 15px rgba(0,0,0,0.1);
   cursor: pointer;
+  touch-action: manipulation;
   transition: transform 0.2s;
 }
 
@@ -209,14 +237,14 @@ body {
 .clicker-text {
   font-size: 18px;
   font-weight: 600;
-  color: #334155;
+  color: var(--cw-navy);
   margin-top: 16px;
   margin-bottom: 8px;
 }
 
 .clicker-subtext {
   font-size: 14px;
-  color: #64748b;
+  color: #4b5563;
   margin: 0;
 }
 
@@ -225,7 +253,7 @@ body {
   margin-top: 12px;
   margin-bottom: 0;
   font-size: 13px;
-  color: #9f1239;
+  color: var(--cw-clay);
   font-weight: 600;
 }
 
@@ -234,7 +262,7 @@ body {
   margin-top: 12px;
   margin-bottom: 0;
   font-size: 14px;
-  color: #065f46;
+  color: var(--cw-navy);
   font-weight: 700;
 }
 
@@ -253,7 +281,7 @@ body {
 }
 
 .milestone-active {
-  background-color: #f1f5f9;
+  background-color: rgba(255, 201, 7, 0.16);
 }
 
 .milestone-inactive {
@@ -264,7 +292,7 @@ body {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: #cbd5e1;
+  background-color: var(--cw-gray);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -283,6 +311,77 @@ body {
   margin-bottom: 4px;
 }
 
+.main-goal-text {
+  margin: 0 0 12px 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border-left: 4px solid var(--cw-yellow);
+  background-color: var(--cw-cream);
+  color: var(--cw-navy);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.milestone-main-goal {
+  border: 2px solid var(--cw-yellow);
+  background: linear-gradient(90deg, var(--cw-cream), var(--cw-yellow));
+  opacity: 1;
+}
+
+.milestone-main-goal .milestone-icon {
+  background-color: var(--cw-navy);
+  color: var(--cw-white);
+}
+
+.milestone-main-goal .milestone-text {
+  color: var(--cw-navy);
+  font-weight: 700;
+}
+
+.checkpoint-track {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  justify-content: center;
+}
+
+.checkpoint-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid var(--cw-gray);
+  background-color: var(--cw-white);
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.checkpoint-pill.checkpoint-complete {
+  border-color: var(--cw-yellow);
+  background-color: var(--cw-yellow);
+  color: var(--cw-navy);
+}
+
+.milestone-message {
+  min-height: 20px;
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cw-navy);
+  text-align: center;
+}
+
+.milestones-card .card-title {
+  text-align: center;
+}
+
+.milestones-card .main-goal-text {
+  text-align: center;
+}
+
 /* Upgrade Buttons */
 .upgrade-button {
   width: 100%;
@@ -290,13 +389,14 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--cw-gray);
   border-radius: 4px;
-  background-color: white;
+  background-color: var(--cw-white);
   cursor: not-allowed;
   opacity: 0.6;
   margin-bottom: 8px;
   text-align: left;
+  touch-action: manipulation;
 }
 
 .upgrade-button:not([disabled]) {
@@ -305,8 +405,8 @@ body {
 }
 
 .upgrade-button:not([disabled]):hover {
-  background-color: #f8fafc;
-  border-color: #cbd5e1;
+  background-color: rgba(255, 201, 7, 0.12);
+  border-color: var(--cw-yellow);
 }
 
 .upgrade-content {
@@ -321,19 +421,19 @@ body {
 
 .upgrade-desc {
   font-size: 12px;
-  color: #64748b;
+  color: #4b5563;
   margin: 0 0 4px 0;
 }
 
 .upgrade-cost {
   font-size: 12px;
-  color: #003366;
+  color: var(--cw-navy);
   font-weight: 500;
   margin: 0;
 }
 
 .upgrade-count {
-  color: #94a3b8;
+  color: #6b7280;
   font-weight: 600;
 }
 
@@ -341,7 +441,7 @@ body {
   margin-top: 6px;
   margin-bottom: 0;
   font-size: 12px;
-  color: #9a3412;
+  color: var(--cw-clay);
   line-height: 1.4;
 }
 
@@ -371,5 +471,89 @@ body {
   }
   100% {
     transform: translateY(110vh) rotate(540deg);
+  }
+}
+
+@media (max-width: 960px) {
+  .main-content {
+    padding: 16px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .clicker-card {
+    min-height: 340px;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: 12px;
+  }
+
+  .header-inner {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .header-title {
+    font-size: 20px;
+    line-height: 1.2;
+  }
+
+  .header-buttons {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .main-content {
+    padding: 12px;
+  }
+
+  .card,
+  .info-card,
+  .clicker-card {
+    padding: 16px;
+  }
+
+  .clicker-card {
+    min-height: 280px;
+  }
+
+  .clicker-circle {
+    padding: 20px;
+    border-width: 3px;
+  }
+
+  .clicker-image {
+    width: 96px;
+    height: 96px;
+  }
+
+  .clicker-text {
+    font-size: 16px;
+    margin-top: 12px;
+  }
+
+  .upgrade-button {
+    padding: 12px 10px;
+    min-height: 56px;
+  }
+
+  .checkpoint-track {
+    flex-wrap: wrap;
+  }
+
+  .upgrade-title {
+    font-size: 13px;
+  }
+
+  .upgrade-desc,
+  .upgrade-cost,
+  .grader-disclaimer {
+    font-size: 11px;
   }
 }

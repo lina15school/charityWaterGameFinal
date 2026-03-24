@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Water For All - Idle Game</title>
+  <title>charity: water - A Clicker Game</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,10 +11,8 @@
   <header class="header">
     <div class="header-inner">
       <h1 class="header-title">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
-        </svg>
-        Water For All
+        <img src="assets/jerryCan.png" alt="charity: water Jerry Can" class="header-logo">
+        charity: water - Clicking for Hope
       </h1>
       <div class="header-buttons">
         <button class="header-button" id="info-btn">ℹ</button>
@@ -54,7 +52,7 @@
               <div class="progress-fill" id="people-progress"></div>
             </div>
           </div>
-          <div class="section-spacing">
+          <div>
             <div class="flex-between">
               <span class="text-small">Communities</span>
               <span style="font-weight: 600;" id="communities">0</span>
@@ -63,10 +61,20 @@
               <div class="progress-fill" id="communities-progress"></div>
             </div>
           </div>
-          <div>
+          <div class="section-spacing">
             <div class="flex-between">
               <span class="text-small">Wells Built</span>
               <span style="font-weight: 600;" id="wells">0</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="wells-progress"></div>
+            </div>
+          </div>
+          
+          <div>
+            <div class="flex-between">
+              <span class="text-small">Countries Reached</span>
+              <span style="font-weight: 600;" id="countries">0</span>
             </div>
           </div>
         </div>
@@ -84,8 +92,8 @@
         <div class="clicker-card">
           <div style="text-align: center;">
             <div class="clicker-circle" id="clicker">
-              <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect x='60' y='40' width='80' height='120' rx='10' fill='%23003366'/%3E%3Crect x='65' y='30' width='70' height='15' rx='7' fill='%23003366'/%3E%3Cpath d='M 100 30 L 110 15 L 115 30' fill='%23003366'/%3E%3C/svg%3E" 
-                   alt="Jerrycan" 
+                <img src="assets/jerryCan.png"
+                  alt="Charity: Water Jerry Can"
                    class="clicker-image">
             </div>
             <p class="clicker-text">Click to Collect Water</p>
@@ -95,8 +103,16 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card milestones-card">
           <h2 class="card-title">Milestones</h2>
+          <p class="main-goal-text">Main Goal: Change the World (10,000 drops)</p>
+          <div class="checkpoint-track" aria-label="Main goal checkpoints">
+            <span class="checkpoint-pill" id="checkpoint-25">25%</span>
+            <span class="checkpoint-pill" id="checkpoint-50">50%</span>
+            <span class="checkpoint-pill" id="checkpoint-75">75%</span>
+            <span class="checkpoint-pill" id="checkpoint-100">100%</span>
+          </div>
+          <p class="milestone-message" id="milestone-message"></p>
           <div>
             <div class="milestone milestone-active" id="milestone-row-1">
               <div class="milestone-icon">🚰</div>
@@ -116,7 +132,7 @@
                 </div>
               </div>
             </div>
-            <div class="milestone milestone-inactive" id="milestone-row-3">
+            <div class="milestone milestone-inactive milestone-main-goal" id="milestone-row-3">
               <div class="milestone-icon">🌍</div>
               <div class="milestone-content">
                 <p class="milestone-text">Change the World</p>
@@ -183,7 +199,7 @@
             <button class="upgrade-button" id="upgrade-grader-fast-track" disabled>
               <div class="upgrade-content">
                 <p class="upgrade-title">FOR GRADING PURPOSE ONLY</p>
-                <p class="upgrade-desc">+500 water/sec</p>
+                <p class="upgrade-desc">+50 water/sec</p>
                 <p class="upgrade-cost" id="cost-grader-fast-track">Cost: 1 drop</p>
               </div>
               <span class="upgrade-count" id="count-grader-fast-track">0</span>
@@ -223,7 +239,7 @@
             <button class="upgrade-button" id="boost-smart-logistics" disabled>
               <div class="upgrade-content">
                 <p class="upgrade-title">Smart Logistics</p>
-                <p class="upgrade-desc">+3 click power</p>
+                <p class="upgrade-desc">+10% of water/sec as click power</p>
                 <p class="upgrade-cost" id="cost-smart-logistics">Cost: 1,000 drops</p>
               </div>
             </button>
