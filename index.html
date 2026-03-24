@@ -28,6 +28,19 @@
       <!-- Left Column - Stats -->
       <div class="column">
         <div class="card">
+          <h2 class="card-title">Difficulty</h2>
+          <div class="difficulty-controls">
+            <label class="text-small" for="difficulty-select">Mode</label>
+            <select id="difficulty-select" class="difficulty-select">
+              <option value="easy">Easy</option>
+              <option value="normal" selected>Normal</option>
+              <option value="hard">Hard</option>
+            </select>
+            <p class="difficulty-details" id="difficulty-details"></p>
+          </div>
+        </div>
+
+        <div class="card">
           <h2 class="card-title">Resources</h2>
           <div>
             <div class="flex-between">
@@ -101,6 +114,7 @@
             <p class="event-message" id="event-message"></p>
             <p class="win-message" id="win-message">You changed the world! Clean water reached communities everywhere.</p>
           </div>
+          <div class="interactive-drops" id="interactive-drops" aria-label="Collectible water drops"></div>
         </div>
 
         <div class="card milestones-card">
@@ -281,6 +295,23 @@
       </div>
     </div>
   </div>
+
+  <footer class="site-footer" id="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="assets/jerryCan.png" alt="charity: water Jerry Can" class="footer-logo">
+        <div>
+          <p class="footer-title">charity: water</p>
+          <p class="footer-text">100% of public donations fund clean water projects.</p>
+        </div>
+      </div>
+      <div class="footer-links" aria-label="charity water links">
+        <a href="https://www.charitywater.org" target="_blank" rel="noopener noreferrer">Official Website</a>
+        <a href="https://www.charitywater.org/donate" target="_blank" rel="noopener noreferrer">Donate Now</a>
+        <a href="https://www.charitywater.org/take-action" target="_blank" rel="noopener noreferrer">Water Programs</a>
+      </div>
+    </div>
+  </footer>
 
   <div id="confetti-container"></div>
 

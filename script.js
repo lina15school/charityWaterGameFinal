@@ -1,6 +1,28 @@
 const STORAGE_KEY = 'waterForAllSaveV1';
-const CHANGE_THE_WORLD_TARGET = 10000;
 const PRODUCTION_TICK_MS = 5;
+const DIFFICULTY_SETTINGS = {
+  easy: {
+    label: 'Easy',
+    winTarget: 7000,
+    obstacleIntervalMs: 26000,
+    obstacleLossRatio: 0.08,
+    minimumObstacleLoss: 12
+  },
+  normal: {
+    label: 'Normal',
+    winTarget: 10000,
+    obstacleIntervalMs: 20000,
+    obstacleLossRatio: 0.1,
+    minimumObstacleLoss: 20
+  },
+  hard: {
+    label: 'Hard',
+    winTarget: 14000,
+    obstacleIntervalMs: 14000,
+    obstacleLossRatio: 0.14,
+    minimumObstacleLoss: 28
+  }
+};
 
 const gameState = {
   waterDrops: 0,
@@ -9,6 +31,7 @@ const gameState = {
   communities: 0,
   wells: 0,
   countries: 0,
+  difficulty: 'normal',
   clickPower: 1,
   productionMultiplier: 1,
   volunteerMultiplier: 1,
@@ -48,18 +71,25 @@ const peopleProgressEl = document.getElementById('people-progress');
 const communitiesProgressEl = document.getElementById('communities-progress');
 const wellsProgressEl = document.getElementById('wells-progress');
 const clickerSubtextEl = document.querySelector('.clicker-subtext');
+const infoBtn = document.getElementById('info-btn');
 const resetGameBtn = document.getElementById('reset-game-btn');
 const eventMessageEl = document.getElementById('event-message');
 const milestoneMessageEl = document.getElementById('milestone-message');
+const difficultySelectEl = document.getElementById('difficulty-select');
+const difficultyDetailsEl = document.getElementById('difficulty-details');
+const mainGoalTextEl = document.querySelector('.main-goal-text');
 const winMessageEl = document.getElementById('win-message');
 const confettiContainer = document.getElementById('confetti-container');
+const interactiveDropsEl = document.getElementById('interactive-drops');
 const didYouKnowTextEl = document.getElementById('did-you-know-text');
 const checkpoint25El = document.getElementById('checkpoint-25');
 const checkpoint50El = document.getElementById('checkpoint-50');
 const checkpoint75El = document.getElementById('checkpoint-75');
 const checkpoint100El = document.getElementById('checkpoint-100');
+const siteFooterEl = document.getElementById('site-footer');
 const clickSound = new Audio('assets/clickEffect.mp3');
 clickSound.preload = 'auto';
+let obstacleTimerId = null;
 
 function playClickSound() {
   // Play a fresh instance so rapid clicks can overlap without cutting off prior audio.
@@ -158,6 +188,24 @@ function formatNumber(value) {
   return value.toFixed(1);
 }
 
+function getDifficultyConfig() {
+  return DIFFICULTY_SETTINGS[gameState.difficulty] || DIFFICULTY_SETTINGS.normal;
+}
+
+function getCurrentWinTarget() {
+  return getDifficultyConfig().winTarget;
+}
+
+function updateDifficultyUi() {
+  const config = getDifficultyConfig();
+  difficultySelectEl.value = gameState.difficulty;
+  difficultyDetailsEl.textContent =
+    'Goal: ' + formatNumber(config.winTarget) +
+    ' drops | Contamination every ' + (config.obstacleIntervalMs / 1000) +
+    's | Loss: ' + Math.round(config.obstacleLossRatio * 100) + '%';
+  mainGoalTextEl.textContent = 'Main Goal: Change the World (' + formatNumber(config.winTarget) + ' drops)';
+}
+
 function getBasePerSecond() {
   let total = 0;
   const keys = Object.keys(gameState.upgrades);
@@ -241,10 +289,11 @@ function setCheckpointState(element, isComplete) {
 }
 
 function updateCheckpointHighlights() {
-  setCheckpointState(checkpoint25El, gameState.totalCollected >= CHANGE_THE_WORLD_TARGET * 0.25);
-  setCheckpointState(checkpoint50El, gameState.totalCollected >= CHANGE_THE_WORLD_TARGET * 0.5);
-  setCheckpointState(checkpoint75El, gameState.totalCollected >= CHANGE_THE_WORLD_TARGET * 0.75);
-  setCheckpointState(checkpoint100El, gameState.totalCollected >= CHANGE_THE_WORLD_TARGET);
+  const winTarget = getCurrentWinTarget();
+  setCheckpointState(checkpoint25El, gameState.totalCollected >= winTarget * 0.25);
+  setCheckpointState(checkpoint50El, gameState.totalCollected >= winTarget * 0.5);
+  setCheckpointState(checkpoint75El, gameState.totalCollected >= winTarget * 0.75);
+  setCheckpointState(checkpoint100El, gameState.totalCollected >= winTarget);
 }
 
 function updateProgressBars() {
@@ -264,7 +313,7 @@ function updateProgressBars() {
 
   const milestone1Percent = Math.min((gameState.totalCollected / 10) * 100, 100);
   const milestone2Percent = Math.min((gameState.totalCollected / 1000) * 100, 100);
-  const milestone3Percent = Math.min((gameState.totalCollected / 10000) * 100, 100);
+  const milestone3Percent = Math.min((gameState.totalCollected / getCurrentWinTarget()) * 100, 100);
 
   milestone1El.style.width = milestone1Percent + '%';
   milestone2El.style.width = milestone2Percent + '%';
@@ -273,7 +322,7 @@ function updateProgressBars() {
 
   setMilestoneRowState(milestoneRow1El, gameState.totalCollected >= 10);
   setMilestoneRowState(milestoneRow2El, gameState.totalCollected >= 1000);
-  setMilestoneRowState(milestoneRow3El, gameState.totalCollected >= 10000);
+  setMilestoneRowState(milestoneRow3El, gameState.totalCollected >= getCurrentWinTarget());
 }
 
 function updateBoostButton(boostKey) {
@@ -390,15 +439,54 @@ function showMilestoneMessage(text) {
 }
 
 function triggerObstacle() {
-  if (gameState.waterDrops < 30) {
+  const config = getDifficultyConfig();
+  if (gameState.waterDrops < config.minimumObstacleLoss) {
     return;
   }
 
-  const loss = Math.max(20, Math.floor(gameState.waterDrops * 0.1));
+  const loss = Math.max(config.minimumObstacleLoss, Math.floor(gameState.waterDrops * config.obstacleLossRatio));
   removeWater(loss);
   updateDisplay();
   saveGame();
   showEventMessage('Obstacle: A contamination event wasted ' + formatNumber(loss) + ' drops.');
+}
+
+function scheduleObstacleLoop() {
+  if (obstacleTimerId !== null) {
+    clearInterval(obstacleTimerId);
+  }
+  obstacleTimerId = setInterval(function () {
+    triggerObstacle();
+  }, getDifficultyConfig().obstacleIntervalMs);
+}
+
+function spawnCollectibleDrop() {
+  if (!interactiveDropsEl || interactiveDropsEl.childElementCount >= 14) {
+    return;
+  }
+
+  const drop = document.createElement('button');
+  drop.type = 'button';
+  drop.className = 'collectible-drop';
+  drop.textContent = '+';
+  drop.style.left = (10 + Math.random() * 80) + '%';
+  drop.style.top = (18 + Math.random() * 64) + '%';
+
+  const collectDrop = function (event) {
+    event.stopPropagation();
+    const bonus = Math.max(1, getCurrentClickPower() * 0.2);
+    addWater(bonus);
+    drop.remove();
+    updateDisplay();
+    checkWinCondition();
+  };
+
+  drop.addEventListener('click', collectDrop);
+  interactiveDropsEl.appendChild(drop);
+
+  setTimeout(function () {
+    drop.remove();
+  }, 2600);
 }
 
 function launchConfetti() {
@@ -421,19 +509,21 @@ function launchConfetti() {
 }
 
 function checkMilestoneProgressMessages() {
-  if (!gameState.milestoneMessages.quarter && gameState.totalCollected >= CHANGE_THE_WORLD_TARGET * 0.25) {
+  const winTarget = getCurrentWinTarget();
+
+  if (!gameState.milestoneMessages.quarter && gameState.totalCollected >= winTarget * 0.25) {
     gameState.milestoneMessages.quarter = true;
     showMilestoneMessage('25% reached: Great start!');
     return;
   }
 
-  if (!gameState.milestoneMessages.halfway && gameState.totalCollected >= CHANGE_THE_WORLD_TARGET * 0.5) {
+  if (!gameState.milestoneMessages.halfway && gameState.totalCollected >= winTarget * 0.5) {
     gameState.milestoneMessages.halfway = true;
     showMilestoneMessage('50% reached: Halfway there!');
     return;
   }
 
-  if (!gameState.milestoneMessages.threeQuarters && gameState.totalCollected >= CHANGE_THE_WORLD_TARGET * 0.75) {
+  if (!gameState.milestoneMessages.threeQuarters && gameState.totalCollected >= winTarget * 0.75) {
     gameState.milestoneMessages.threeQuarters = true;
     showMilestoneMessage('75% reached: The finish line is close!');
   }
@@ -446,7 +536,7 @@ function checkWinCondition() {
 
   checkMilestoneProgressMessages();
 
-  if (gameState.totalCollected >= CHANGE_THE_WORLD_TARGET) {
+  if (gameState.totalCollected >= getCurrentWinTarget()) {
     gameState.winReached = true;
     updateDisplay();
     launchConfetti();
@@ -459,6 +549,7 @@ function saveGame() {
   const saveData = {
     waterDrops: gameState.waterDrops,
     totalCollected: gameState.totalCollected,
+    difficulty: gameState.difficulty,
     clickPower: gameState.clickPower,
     productionMultiplier: gameState.productionMultiplier,
     volunteerMultiplier: gameState.volunteerMultiplier,
@@ -499,6 +590,7 @@ function loadGame() {
 
     gameState.waterDrops = savedData.waterDrops || 0;
     gameState.totalCollected = savedData.totalCollected || 0;
+    gameState.difficulty = savedData.difficulty || 'normal';
     gameState.clickPower = savedData.clickPower || 1;
     gameState.productionMultiplier = savedData.productionMultiplier || 1;
     gameState.volunteerMultiplier = savedData.volunteerMultiplier || 1;
@@ -528,6 +620,8 @@ function loadGame() {
     }
 
     updateImpact();
+    updateDifficultyUi();
+    scheduleObstacleLoop();
   } catch (error) {
     localStorage.removeItem(STORAGE_KEY);
   }
@@ -547,6 +641,7 @@ function resetGame() {
   gameState.communities = 0;
   gameState.wells = 0;
   gameState.countries = 0;
+  gameState.difficulty = 'normal';
   gameState.clickPower = 1;
   gameState.productionMultiplier = 1;
   gameState.volunteerMultiplier = 1;
@@ -566,6 +661,8 @@ function resetGame() {
 
   eventMessageEl.textContent = '';
   milestoneMessageEl.textContent = '';
+  updateDifficultyUi();
+  scheduleObstacleLoop();
   updateDisplay();
   saveGame();
 }
@@ -583,10 +680,33 @@ clicker.addEventListener('click', function () {
   playClickSound();
 
   addWater(getCurrentClickPower());
+  if (Math.random() < 0.4) {
+    spawnCollectibleDrop();
+  }
   updateDisplay();
   checkWinCondition();
   saveGame();
 });
+
+difficultySelectEl.addEventListener('change', function () {
+  gameState.difficulty = difficultySelectEl.value;
+  gameState.winReached = false;
+  gameState.milestoneMessages.quarter = false;
+  gameState.milestoneMessages.halfway = false;
+  gameState.milestoneMessages.threeQuarters = false;
+  milestoneMessageEl.textContent = '';
+  updateDifficultyUi();
+  scheduleObstacleLoop();
+  updateDisplay();
+  checkWinCondition();
+  saveGame();
+});
+
+if (infoBtn && siteFooterEl) {
+  infoBtn.addEventListener('click', function () {
+    siteFooterEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
 
 ui.handPump.button.addEventListener('click', function () {
   buyUpgrade('handPump');
@@ -657,14 +777,12 @@ setInterval(function () {
 }, 2000);
 
 setInterval(function () {
-  triggerObstacle();
-}, 20000);
-
-setInterval(function () {
   showNextDidYouKnowFact();
 }, 10000);
 
 loadGame();
+updateDifficultyUi();
+scheduleObstacleLoop();
 showNextDidYouKnowFact();
 updateDisplay();
 checkWinCondition();
